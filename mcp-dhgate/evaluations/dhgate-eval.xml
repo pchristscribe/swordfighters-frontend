@@ -1,0 +1,155 @@
+<!--
+DHgate MCP Server Evaluation Questions
+
+These questions test whether LLMs can effectively use the DHgate MCP server to answer
+realistic affiliate marketing questions. Each question requires multiple tool calls,
+deep exploration, and combines data from different sources.
+
+Requirements for Running:
+- DHGATE_API_TOKEN must be configured with valid TMAPI credentials
+- Server must be running and accessible
+- All questions use read-only operations
+
+Note: Answers will vary based on current DHgate product catalog. These questions are
+designed to test the MCP server's capabilities, not to verify specific product data.
+The answer placeholders below should be replaced with actual results after running
+evaluations with live API access.
+-->
+
+<evaluation>
+  <qa_pair>
+    <question>Search for "wireless bluetooth headphones" sorted by rating with free shipping enabled. What is the title of the highest-rated product that has more than 1000 reviews?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with multiple parameters (keywords, sort, free_shipping filter)
+      - Parsing search results to find specific criteria (>1000 reviews)
+      - Identifying the highest-rated product from filtered results
+
+      To verify: Run search_products with keywords="wireless bluetooth headphones", sort="rating", free_shipping=true
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find "men leather wallet" products sorted by sales. Among the top 5 best-selling products, what is the average price in USD?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with sort="sales"
+      - Extracting top 5 results
+      - Mathematical calculation (average price)
+      - Number formatting
+
+      To verify: Run search_products with keywords="men leather wallet", sort="sales"
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for "smart watch" with high_rating filter enabled. What percentage of the first page results (up to 20 products) have free shipping?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with high_rating filter
+      - Analyzing multiple product results
+      - Calculating percentages
+      - Understanding shipping attributes
+
+      To verify: Run search_products with keywords="smart watch", high_rating=true
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find "women summer dress" sorted by price_up (lowest first). What is the price difference between the cheapest and the 10th cheapest product?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with sort="price_up"
+      - Extracting specific positions in results
+      - Price calculation and comparison
+
+      To verify: Run search_products with keywords="women summer dress", sort="price_up"
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for "gaming keyboard" sorted by newest. Among products on the first page, how many sellers have a rating above 95%?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with sort="newest"
+      - Analyzing seller ratings across multiple products
+      - Counting results matching criteria
+
+      To verify: Run search_products with keywords="gaming keyboard", sort="newest"
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find "phone case" with free_shipping=true sorted by rating. What is the seller name of the product with exactly 4.7 rating and the most reviews?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with multiple filters
+      - Precise rating matching (4.7 exactly)
+      - Finding maximum reviews among filtered set
+      - Extracting seller information
+
+      To verify: Run search_products with keywords="phone case", free_shipping=true, sort="rating"
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for "laptop backpack" sorted by sales. Take the product_id of the 3rd result and get its detailed information. What is the seller rating percentage?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - Multi-step workflow: search then get details
+      - search_products followed by get_product_details
+      - Extracting specific result position
+      - Accessing detailed product attributes
+
+      To verify: Run search_products with keywords="laptop backpack", sort="sales", then get_product_details with the 3rd result's product_id
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find "wireless mouse" products with high_rating=true. What is the total number of reviews across all products on page 1?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with high_rating filter
+      - Aggregating data across multiple results
+      - Summing review counts
+
+      To verify: Run search_products with keywords="wireless mouse", high_rating=true, page=1
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for "yoga mat" sorted by price_down (highest first). Among the top 10 results, what is the most common currency used?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with sort="price_down"
+      - Analyzing currency fields
+      - Finding mode (most common value)
+      - Data aggregation across results
+
+      To verify: Run search_products with keywords="yoga mat", sort="price_down"
+    </notes>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find "sunglasses" with free_shipping=true and high_rating=true. What is the median price of all products on the first page?</question>
+    <answer>TO_BE_DETERMINED_WITH_API_ACCESS</answer>
+    <notes>
+      This question tests:
+      - search_products with multiple filters
+      - Collecting all prices from results
+      - Statistical calculation (median)
+      - Handling variable result counts
+
+      To verify: Run search_products with keywords="sunglasses", free_shipping=true, high_rating=true
+    </notes>
+  </qa_pair>
+</evaluation>

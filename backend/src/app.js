@@ -1,9 +1,17 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import cookie from '@fastify/cookie';
+import session from '@fastify/session';
+import { RedisStore } from 'connect-redis';
 import prisma from './lib/prisma.js';
 import redis from './lib/redis.js';
 import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
+import adminAuthRoutes from './routes/admin/auth.js';
+import adminWebAuthnRoutes from './routes/admin/webauthn.js';
+import adminProductRoutes from './routes/admin/products.js';
+import adminCategoryRoutes from './routes/admin/categories.js';
+import adminReviewRoutes from './routes/admin/reviews.js';
 
 export async function buildApp(opts = {}) {
   const fastify = Fastify({
@@ -22,12 +30,29 @@ export async function buildApp(opts = {}) {
     },
   });
 
-  // Register CORS
+  // Register CORS - allow both frontend and admin app
   await fastify.register(cors, {
     origin: process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL
-      : 'http://localhost:3000',
+      ? [process.env.FRONTEND_URL, process.env.ADMIN_URL]
+      : ['http://localhost:3000', 'http://localhost:3002'],
     credentials: true,
+  });
+
+  // Register cookie support
+  await fastify.register(cookie);
+
+  // Register session with Redis store
+  await fastify.register(session, {
+    store: new RedisStore({ client: redis }),
+    secret: process.env.SESSION_SECRET || 'change-this-secret-in-production-at-least-32-characters-long',
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      sameSite: 'lax'
+    },
+    saveUninitialized: false,
+    resave: false
   });
 
   // Decorators for database clients
@@ -55,9 +80,16 @@ export async function buildApp(opts = {}) {
     }
   });
 
-  // Register routes
+  // Register public routes
   fastify.register(productRoutes, { prefix: '/api/products' });
   fastify.register(categoryRoutes, { prefix: '/api/categories' });
+
+  // Register admin routes
+  fastify.register(adminAuthRoutes, { prefix: '/api/admin/auth' });
+  fastify.register(adminWebAuthnRoutes, { prefix: '/api/admin/webauthn' });
+  fastify.register(adminProductRoutes, { prefix: '/api/admin/products' });
+  fastify.register(adminCategoryRoutes, { prefix: '/api/admin/categories' });
+  fastify.register(adminReviewRoutes, { prefix: '/api/admin/reviews' });
 
   return fastify;
 }

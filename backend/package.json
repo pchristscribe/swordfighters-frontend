@@ -10,10 +10,14 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [
     "affiliate",
@@ -23,10 +27,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.1.0",
     "@fastify/env": "^5.0.3",
+    "@fastify/session": "^11.1.1",
     "@prisma/client": "^5.22.0",
+    "@simplewebauthn/server": "^13.2.2",
+    "bcryptjs": "^3.0.3",
     "bull": "^4.16.5",
+    "connect-redis": "^9.0.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.2",
     "ioredis": "^5.8.2"

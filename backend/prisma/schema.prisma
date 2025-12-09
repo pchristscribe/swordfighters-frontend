@@ -102,3 +102,37 @@ model Review {
   @@index([isFeatured])
   @@map("reviews")
 }
+
+model Admin {
+  id                   String              @id @default(cuid())
+  email                String              @unique
+  passwordHash         String?             // Optional: allow WebAuthn-only auth
+  name                 String
+  role                 String              @default("admin")
+  isActive             Boolean             @default(true)
+  lastLoginAt          DateTime?
+  currentChallenge     String?             // Store active WebAuthn challenge
+  webauthnCredentials  WebAuthnCredential[]
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
+
+model WebAuthnCredential {
+  id                String   @id @default(cuid())
+  adminId           String
+  admin             Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  credentialId      String   @unique // Base64-encoded credential ID
+  publicKey         String   // Base64-encoded public key
+  counter           BigInt   // Signature counter for replay protection
+  deviceName        String?  // User-friendly name (e.g., "YubiKey 5", "MacBook Touch ID")
+  transports        String[] // Supported transports (usb, nfc, ble, internal)
+  lastUsedAt        DateTime?
+  createdAt         DateTime @default(now())
+
+  @@index([adminId])
+  @@index([credentialId])
+  @@map("webauthn_credentials")
+}

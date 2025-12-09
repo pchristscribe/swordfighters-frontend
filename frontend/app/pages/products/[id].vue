@@ -9,7 +9,7 @@ onMounted(() => {
   productStore.fetchProduct(productId)
 })
 
-const product = computed(() => productStore.currentProduct)
+const product = computed(() => productStore?.currentProduct)
 
 // Handle affiliate link click
 const handleAffiliateClick = (url: string) => {
@@ -21,7 +21,7 @@ const handleAffiliateClick = (url: string) => {
 <template>
   <div>
     <!-- Loading State -->
-    <div v-if="productStore.loading" class="text-center py-12">
+    <div v-if="productStore?.loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       <p class="mt-4 text-gray-600">Loading product...</p>
     </div>

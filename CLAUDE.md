@@ -63,4 +63,13 @@ Swordfighters App is an affiliate marketing platform targeting gay men, curating
 ## Legal Compliance
 
 All affiliate links and sponsored content must include FTC-compliant disclosures indicating that the site receives monetary compensation from affiliate programs.
-- Always use descriptive variable names
+
+## Code Style Rules
+
+### Code Formatting
+
+- No semicolons (enforced)
+- Single quotes (enforced)
+- No unnecessary curly braces (enforced)
+- 2-space indentation
+- Import order: external → internal → types

@@ -28,4 +28,12 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  vite: {
+    server: {
+      hmr: {
+        port: 24677 // Changed to avoid conflict with admin-frontend
+      }
+    }
+  }
 })
