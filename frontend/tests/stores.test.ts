@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useProductStore } from '../stores/products'
+import { useProductStore } from '../app/stores/products'
 
 // Mock the useApi composable as a global function
 const mockUseApi = vi.fn(() => ({
