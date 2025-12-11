@@ -7,11 +7,12 @@ export default defineNuxtConfig({
     port: 3000,
   },
 
-  modules: [
-    '@nuxtjs/tailwindcss',
-    '@pinia/nuxt',
-  ],
-
+  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', 'nuxt-headlessui'],
+   
+  // Optionally change the default prefix.
+  headlessui: {
+    prefix: 'Headless'
+    }
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3001',

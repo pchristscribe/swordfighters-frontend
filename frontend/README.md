@@ -1,23 +1,20 @@
-# Nuxt Minimal Starter
+# Swordfighters User Frontend
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+User-facing product catalog for the Swordfighters affiliate marketing platform.
+
+## Tech Stack
+
+- **Framework**: Nuxt 4 (Vue 3 + SSR)
+- **Styling**: Tailwind CSS
+- **State Management**: Pinia
+- **Testing**: Vitest + Vue Test Utils
 
 ## Setup
 
-Make sure to install dependencies:
+Install dependencies:
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ## Development Server
@@ -25,51 +22,44 @@ bun install
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
+
+## Testing
+
+Run tests:
+
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:ui       # Visual test UI
+npm run test:coverage # Coverage report
+```
+
+See [../TEST_COVERAGE_SUMMARY.md](../TEST_COVERAGE_SUMMARY.md) for comprehensive test documentation.
 
 ## Production
 
 Build the application for production:
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
 Locally preview production build:
 
 ```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Project Documentation
+
+- **[Root README](../README.md)** - Project overview and structure
+- **[CLAUDE.md](../CLAUDE.md)** - Development guidelines
+- **[TEST_COVERAGE_SUMMARY.md](../TEST_COVERAGE_SUMMARY.md)** - Test coverage details
+
+## Resources
+
+- [Nuxt 4 Documentation](https://nuxt.com/docs/getting-started/introduction)
+- [Nuxt Deployment Guide](https://nuxt.com/docs/getting-started/deployment)
+- [Vitest Documentation](https://vitest.dev/)
