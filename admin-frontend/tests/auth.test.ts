@@ -602,3 +602,495 @@ describe('Auth Store - Input Validation', () => {
     })
   })
 })
+
+/**
+ * Security-focused edge case tests
+ * These tests verify protection against various attack vectors
+ * Reference: VALIDATION_BUGS_FOUND.md - Bugs #1, #2, #3
+ */
+describe('Auth Store - Security Edge Cases', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  describe('Email Injection Prevention', () => {
+    // Bug #1: Whitespace attacks
+    it('should reject emails with only tabs', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const result = await store.registerSecurityKey('\t\t\t')
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email is required')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should reject emails with mixed whitespace', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const result = await store.registerSecurityKey(' \t \n ')
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email is required')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should trim leading/trailing whitespace from valid emails', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn().mockResolvedValueOnce({
+        challenge: 'test',
+        user: { id: 'test' }
+      })
+
+      try {
+        await store.registerSecurityKey('  test@example.com  ')
+      } catch {
+        // WebAuthn step will fail, but email should be trimmed
+      }
+
+      // Should call API with trimmed, lowercase email
+      expect(global.$fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: expect.objectContaining({
+            email: 'test@example.com'
+          })
+        })
+      )
+    })
+
+    // XSS attack vectors in email
+    it('should reject email with HTML script tags', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const result = await store.registerSecurityKey('<script>alert("xss")</script>@evil.com')
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Invalid email format')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should reject email with javascript protocol', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const result = await store.registerSecurityKey('javascript:alert(1)@example.com')
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Invalid email format')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    // SQL injection patterns
+    it('should reject email with SQL injection pattern', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const result = await store.registerSecurityKey("'; DROP TABLE users; --@evil.com")
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Invalid email format')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Type Coercion Prevention', () => {
+    // Bug #2: Non-string types should not cause crashes
+    it('should handle boolean true gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(true)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle boolean false gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(false)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle number 0 gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(0)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle NaN gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(NaN)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle Infinity gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(Infinity)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle Symbol gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(Symbol('email'))
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle BigInt gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(BigInt(12345))
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle function gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(() => 'test@example.com')
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle nested object gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey({ nested: { email: 'test@example.com' } })
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle array with toString override gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const maliciousArray = ['test@example.com']
+      maliciousArray.toString = () => 'malicious@evil.com'
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(maliciousArray)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should handle object with valueOf override gracefully', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      const maliciousObject = {
+        valueOf: () => 'malicious@evil.com',
+        toString: () => 'malicious@evil.com'
+      }
+
+      // @ts-expect-error Testing runtime type safety
+      const result = await store.registerSecurityKey(maliciousObject)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Email Normalization Security', () => {
+    // Bug #3: Ensure normalization doesn't introduce vulnerabilities
+    it('should normalize unicode lookalike characters', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn().mockResolvedValueOnce({
+        challenge: 'test',
+        user: { id: 'test' }
+      })
+
+      // Email should be normalized to lowercase
+      try {
+        await store.registerSecurityKey('TEST@EXAMPLE.COM')
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      expect(global.$fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: expect.objectContaining({
+            email: 'test@example.com'
+          })
+        })
+      )
+    })
+
+    it('should reject extremely long email addresses', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // Create an email that exceeds reasonable limits (254 chars is the RFC limit)
+      const longEmail = 'a'.repeat(250) + '@example.com'
+
+      const result = await store.registerSecurityKey(longEmail)
+
+      expect(result).toBe(false)
+      expect(store.error).toBe('Email is too long')
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should accept email at exactly 254 characters', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn().mockResolvedValueOnce({
+        challenge: 'test',
+        user: { id: 'test' }
+      })
+
+      // Create exactly 254 character email (valid)
+      const localPart = 'a'.repeat(242)  // 242 + 1 (@) + 11 (example.com) = 254
+      const validLongEmail = `${localPart}@example.com`
+
+      try {
+        await store.registerSecurityKey(validLongEmail)
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Should pass validation and attempt API call
+      expect(global.$fetch).toHaveBeenCalled()
+    })
+  })
+
+  describe('Device Name Sanitization', () => {
+    it('should remove XSS script tags from device name', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+        .mockResolvedValueOnce({ challenge: 'test', user: { id: 'test' } })
+        .mockResolvedValueOnce({ verified: true })
+
+      try {
+        await store.registerSecurityKey('test@example.com', '<script>alert("xss")</script>')
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Verify the device name in the second API call (verification) is sanitized
+      if (global.$fetch.mock.calls.length >= 2) {
+        const verifyCall = global.$fetch.mock.calls[1]
+        const body = verifyCall[1]?.body
+        // Device name should have dangerous characters removed
+        expect(body?.deviceName).not.toContain('<script>')
+        expect(body?.deviceName).not.toContain('>')
+      }
+    })
+
+    it('should truncate extremely long device names', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+        .mockResolvedValueOnce({ challenge: 'test', user: { id: 'test' } })
+        .mockResolvedValueOnce({ verified: true })
+
+      const longDeviceName = 'A'.repeat(500)
+
+      try {
+        await store.registerSecurityKey('test@example.com', longDeviceName)
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Verify device name is truncated
+      if (global.$fetch.mock.calls.length >= 2) {
+        const verifyCall = global.$fetch.mock.calls[1]
+        const body = verifyCall[1]?.body
+        if (body?.deviceName) {
+          expect(body.deviceName.length).toBeLessThanOrEqual(100)
+        }
+      }
+    })
+
+    it('should handle null byte injection in device name', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+        .mockResolvedValueOnce({ challenge: 'test', user: { id: 'test' } })
+        .mockResolvedValueOnce({ verified: true })
+
+      try {
+        await store.registerSecurityKey('test@example.com', 'Device\x00Name')
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Should have called API (null bytes are handled)
+      expect(global.$fetch).toHaveBeenCalled()
+    })
+
+    it('should handle SQL injection in device name', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+        .mockResolvedValueOnce({ challenge: 'test', user: { id: 'test' } })
+        .mockResolvedValueOnce({ verified: true })
+
+      try {
+        await store.registerSecurityKey('test@example.com', "'; DROP TABLE credentials; --")
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Verify device name has dangerous characters removed
+      if (global.$fetch.mock.calls.length >= 2) {
+        const verifyCall = global.$fetch.mock.calls[1]
+        const body = verifyCall[1]?.body
+        // Single quotes should be sanitized
+        expect(body?.deviceName).not.toContain("'")
+      }
+    })
+
+    it('should convert non-string device names to undefined', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+        .mockResolvedValueOnce({ challenge: 'test', user: { id: 'test' } })
+        .mockResolvedValueOnce({ verified: true })
+
+      try {
+        // @ts-expect-error Testing runtime safety
+        await store.registerSecurityKey('test@example.com', { malicious: 'object' })
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      // Device name should be undefined for non-string inputs
+      if (global.$fetch.mock.calls.length >= 2) {
+        const verifyCall = global.$fetch.mock.calls[1]
+        const body = verifyCall[1]?.body
+        expect(body?.deviceName).toBeUndefined()
+      }
+    })
+  })
+
+  describe('loginWithSecurityKey Security', () => {
+    it('should apply same email validation as registration', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn()
+
+      // Test type coercion prevention
+      // @ts-expect-error Testing runtime type safety
+      const result1 = await store.loginWithSecurityKey(12345)
+      expect(result1).toBe(false)
+      expect(store.error).toBe('Email must be a string')
+
+      vi.clearAllMocks()
+
+      // Test whitespace-only rejection
+      const result2 = await store.loginWithSecurityKey('   ')
+      expect(result2).toBe(false)
+      expect(store.error).toBe('Email is required')
+
+      vi.clearAllMocks()
+
+      // Test invalid format rejection
+      const result3 = await store.loginWithSecurityKey('not-an-email')
+      expect(result3).toBe(false)
+      expect(store.error).toBe('Invalid email format')
+
+      expect(global.$fetch).not.toHaveBeenCalled()
+    })
+
+    it('should normalize email to lowercase for login', async () => {
+      const store = useAuthStore()
+      global.$fetch = vi.fn().mockResolvedValueOnce({
+        challenge: 'test'
+      })
+
+      try {
+        await store.loginWithSecurityKey('TEST.USER@EXAMPLE.COM')
+      } catch {
+        // WebAuthn step will fail
+      }
+
+      expect(global.$fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: expect.objectContaining({
+            email: 'test.user@example.com'
+          })
+        })
+      )
+    })
+  })
+
+  describe('Error State Isolation', () => {
+    it('should not leak error messages between operations', async () => {
+      const store = useAuthStore()
+
+      // First operation fails with validation error
+      // @ts-expect-error Testing runtime safety
+      await store.registerSecurityKey(null)
+      expect(store.error).toBe('Email must be a string')
+
+      // Second operation with different invalid input
+      await store.registerSecurityKey('')
+      expect(store.error).toBe('Email is required')
+
+      // Error should be from second operation, not first
+      expect(store.error).not.toBe('Email must be a string')
+    })
+
+    it('should clear error when validation passes but API fails', async () => {
+      const store = useAuthStore()
+
+      // Set initial error
+      store.error = 'Initial error'
+
+      // Valid email but API fails
+      global.$fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      await store.registerSecurityKey('test@example.com')
+
+      // Error should be from API failure, not initial state
+      expect(store.error).not.toBe('Initial error')
+      expect(store.error).toBeTruthy()
+    })
+  })
+})

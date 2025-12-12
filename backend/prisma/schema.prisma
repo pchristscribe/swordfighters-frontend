@@ -112,11 +112,13 @@ model Admin {
   isActive             Boolean             @default(true)
   lastLoginAt          DateTime?
   currentChallenge     String?             // Store active WebAuthn challenge
+  challengeExpiresAt   DateTime?           // Challenge expiration timestamp (5 min TTL)
   webauthnCredentials  WebAuthnCredential[]
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
 
   @@index([email])
+  @@index([challengeExpiresAt])
   @@map("admins")
 }
 

@@ -5,6 +5,7 @@ import {
   verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
+import { isValidChallenge } from '../utils/cleanupExpiredChallenges.js';
 
 const RP_NAME = 'Swordfighters Admin';
 const RP_ID = process.env.NODE_ENV === 'production'
@@ -93,10 +94,14 @@ export default async function webauthnRoutes(fastify, options) {
 
       fastify.log.info({ challengeLength: options.challenge.length }, '💾 Storing challenge');
 
-      // Store challenge in admin record
+      // Store challenge in admin record with 5-minute expiration
+      const challengeExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
       await prisma.admin.update({
         where: { id: admin.id },
-        data: { currentChallenge: options.challenge }
+        data: {
+          currentChallenge: options.challenge,
+          challengeExpiresAt
+        }
       });
 
       fastify.log.info('✅ Registration options generated successfully');
@@ -131,6 +136,12 @@ export default async function webauthnRoutes(fastify, options) {
     if (!admin || !admin.currentChallenge) {
       reply.code(400);
       return { error: 'Invalid registration session' };
+    }
+
+    // Check if challenge has expired
+    if (!isValidChallenge(admin)) {
+      reply.code(400);
+      return { error: 'Registration challenge has expired. Please try again.' };
     }
 
     try {
@@ -182,10 +193,13 @@ export default async function webauthnRoutes(fastify, options) {
         }
       });
 
-      // Clear challenge
+      // Clear challenge and expiration
       await prisma.admin.update({
         where: { id: admin.id },
-        data: { currentChallenge: null }
+        data: {
+          currentChallenge: null,
+          challengeExpiresAt: null
+        }
       });
 
       return {
@@ -261,10 +275,14 @@ export default async function webauthnRoutes(fastify, options) {
 
       fastify.log.info({ challengeLength: options.challenge.length }, '💾 Storing authentication challenge');
 
-      // Store challenge
+      // Store challenge with 5-minute expiration
+      const challengeExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
       await prisma.admin.update({
         where: { id: admin.id },
-        data: { currentChallenge: options.challenge }
+        data: {
+          currentChallenge: options.challenge,
+          challengeExpiresAt
+        }
       });
 
       fastify.log.info('✅ Authentication options generated successfully');
@@ -302,6 +320,12 @@ export default async function webauthnRoutes(fastify, options) {
     if (!admin || !admin.currentChallenge) {
       reply.code(400);
       return { error: 'Invalid authentication session' };
+    }
+
+    // Check if challenge has expired
+    if (!isValidChallenge(admin)) {
+      reply.code(400);
+      return { error: 'Authentication challenge has expired. Please try again.' };
     }
 
     // Find the credential being used
@@ -352,7 +376,8 @@ export default async function webauthnRoutes(fastify, options) {
         where: { id: admin.id },
         data: {
           lastLoginAt: new Date(),
-          currentChallenge: null
+          currentChallenge: null,
+          challengeExpiresAt: null
         }
       });
 
