@@ -12,6 +12,7 @@ import adminWebAuthnRoutes from './routes/admin/webauthn.js';
 import adminProductRoutes from './routes/admin/products.js';
 import adminCategoryRoutes from './routes/admin/categories.js';
 import adminReviewRoutes from './routes/admin/reviews.js';
+import { cleanupMiddleware } from './utils/cleanupExpiredChallenges.js';
 
 export async function buildApp(opts = {}) {
   const fastify = Fastify({
@@ -58,6 +59,10 @@ export async function buildApp(opts = {}) {
   // Decorators for database clients
   fastify.decorate('prisma', prisma);
   fastify.decorate('redis', redis);
+
+  // Add cleanup middleware for expired WebAuthn challenges
+  // Runs asynchronously on each request without blocking
+  fastify.addHook('onRequest', cleanupMiddleware);
 
   // Health check route
   fastify.get('/health', async (request, reply) => {

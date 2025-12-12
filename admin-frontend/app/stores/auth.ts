@@ -8,6 +8,76 @@ interface Admin {
   role: string
 }
 
+// Email validation regex - RFC 5322 compliant basic pattern
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
+// Device name constraints
+const MAX_DEVICE_NAME_LENGTH = 100
+const DEVICE_NAME_SANITIZE_REGEX = /[<>"'`\\]/g
+
+/**
+ * Validates email input with comprehensive checks
+ * @param email - The email to validate
+ * @returns Object with isValid boolean and optional error message
+ */
+function validateEmail(email: unknown): { isValid: boolean; error?: string; normalized?: string } {
+  // Type check - must be a string
+  if (typeof email !== 'string') {
+    return { isValid: false, error: 'Email must be a string' }
+  }
+
+  // Trim whitespace
+  const trimmed = email.trim()
+
+  // Empty check after trim
+  if (trimmed.length === 0) {
+    return { isValid: false, error: 'Email is required' }
+  }
+
+  // Length check (practical limits)
+  if (trimmed.length > 254) {
+    return { isValid: false, error: 'Email is too long' }
+  }
+
+  // Format validation
+  if (!EMAIL_REGEX.test(trimmed)) {
+    return { isValid: false, error: 'Invalid email format' }
+  }
+
+  // Normalize to lowercase
+  const normalized = trimmed.toLowerCase()
+
+  return { isValid: true, normalized }
+}
+
+/**
+ * Sanitizes device name input
+ * @param deviceName - The device name to sanitize
+ * @returns Sanitized device name or undefined
+ */
+function sanitizeDeviceName(deviceName: unknown): string | undefined {
+  // Type check
+  if (typeof deviceName !== 'string') {
+    return undefined
+  }
+
+  // Trim whitespace
+  const trimmed = deviceName.trim()
+
+  // Empty check
+  if (trimmed.length === 0) {
+    return undefined
+  }
+
+  // Remove potentially dangerous characters (XSS prevention)
+  const sanitized = trimmed.replace(DEVICE_NAME_SANITIZE_REGEX, '')
+
+  // Enforce length limit
+  const truncated = sanitized.substring(0, MAX_DEVICE_NAME_LENGTH)
+
+  return truncated.length > 0 ? truncated : undefined
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     admin: null as Admin | null,
@@ -21,12 +91,22 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async registerSecurityKey(email: string, deviceName?: string) {
+    async registerSecurityKey(email: unknown, deviceName?: unknown) {
       // WebAuthn is client-side only, guard against SSR
       if (typeof window === 'undefined') {
         console.warn('registerSecurityKey called on server-side, skipping')
         return false
       }
+
+      // Validate email input BEFORE setting loading state
+      const emailValidation = validateEmail(email)
+      if (!emailValidation.isValid) {
+        this.error = emailValidation.error || 'Invalid email'
+        return false
+      }
+
+      const validatedEmail = emailValidation.normalized!
+      const sanitizedDeviceName = sanitizeDeviceName(deviceName)
 
       this.loading = true
       this.error = null
@@ -34,13 +114,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         const config = useRuntimeConfig()
 
-        console.log('🔐 Starting WebAuthn registration for:', email)
+        console.log('🔐 Starting WebAuthn registration for:', validatedEmail)
         console.log('📍 API Base:', config.public.apiBase)
 
         // Get registration options from server
         const optionsResponse = await $fetch(`${config.public.apiBase}/api/admin/webauthn/register/options`, {
           method: 'POST',
-          body: { email },
+          body: { email: validatedEmail },
           credentials: 'include'
         }) as any
 
@@ -57,9 +137,9 @@ export const useAuthStore = defineStore('auth', {
           method: 'POST',
           credentials: 'include',
           body: {
-            email,
+            email: validatedEmail,
             credential,
-            deviceName
+            deviceName: sanitizedDeviceName
           }
         })
 
@@ -93,12 +173,21 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async loginWithSecurityKey(email: string) {
+    async loginWithSecurityKey(email: unknown) {
       // WebAuthn is client-side only, guard against SSR
       if (typeof window === 'undefined') {
         console.warn('loginWithSecurityKey called on server-side, skipping')
         return false
       }
+
+      // Validate email input BEFORE setting loading state
+      const emailValidation = validateEmail(email)
+      if (!emailValidation.isValid) {
+        this.error = emailValidation.error || 'Invalid email'
+        return false
+      }
+
+      const validatedEmail = emailValidation.normalized!
 
       this.loading = true
       this.error = null
@@ -106,12 +195,12 @@ export const useAuthStore = defineStore('auth', {
       try {
         const config = useRuntimeConfig()
 
-        console.log('🔐 Starting WebAuthn authentication for:', email)
+        console.log('🔐 Starting WebAuthn authentication for:', validatedEmail)
 
         // Get authentication options from server
         const optionsResponse = await $fetch(`${config.public.apiBase}/api/admin/webauthn/authenticate/options`, {
           method: 'POST',
-          body: { email }
+          body: { email: validatedEmail }
         })
 
         console.log('✅ Authentication options received')
@@ -126,7 +215,7 @@ export const useAuthStore = defineStore('auth', {
           method: 'POST',
           credentials: 'include',
           body: {
-            email,
+            email: validatedEmail,
             credential
           }
         })
