@@ -213,9 +213,10 @@
             </button>
             <button
               type="submit"
-              class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
+              :disabled="saving"
+              class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {{ editingCategory ? 'Update' : 'Create' }}
+              {{ saving ? 'Saving...' : (editingCategory ? 'Update' : 'Create') }}
             </button>
           </div>
         </form>
@@ -251,11 +252,13 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
+  layout: 'default'
 })
 
 const config = useRuntimeConfig()
 const loading = ref(true)
+const saving = ref(false)
 const categories = ref<any[]>([])
 const pagination = ref<any>(null)
 const searchQuery = ref('')
@@ -345,6 +348,9 @@ const closeModal = () => {
 }
 
 const saveCategory = async () => {
+  if (saving.value) return // Prevent double-submission
+
+  saving.value = true
   try {
     // Clean up form data - remove empty strings
     const cleanData: any = {
@@ -374,6 +380,8 @@ const saveCategory = async () => {
     console.error('Failed to save category:', err)
     const errorMessage = err.data?.message || err.data?.error || 'Failed to save category'
     alert(errorMessage)
+  } finally {
+    saving.value = false
   }
 }
 
