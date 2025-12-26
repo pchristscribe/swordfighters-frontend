@@ -65,7 +65,6 @@ export function sanitizeText(text: string | null | undefined): string {
   }
 
   // Remove any HTML tags
-  return text.replace(/<[^>]*>/g, '')
   let sanitized = text
 
   // First, remove dangerous tags AND their content (case-insensitive)
