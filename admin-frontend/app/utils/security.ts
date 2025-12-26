@@ -49,6 +49,10 @@ export function getSafeImageUrl(url: string | null | undefined, fallback = '/pla
 
 /**
  * Sanitizes text content for safe display
+ * Vue already escapes {{ }} interpolations, but this provides extra safety
+ *
+ * @param text - Text to sanitize
+ * @returns Sanitized text
  * Removes dangerous tags with their content, and strips all other HTML tags
  * Vue already escapes {{ }} interpolations, but this provides extra safety
  *
@@ -60,6 +64,7 @@ export function sanitizeText(text: string | null | undefined): string {
     return ''
   }
 
+  // Remove any HTML tags
   let sanitized = text
 
   // First, remove dangerous tags AND their content (case-insensitive)
