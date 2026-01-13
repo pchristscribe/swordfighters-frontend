@@ -1,0 +1,61 @@
+
+> swordfighters-backend@1.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/Users/pscribbler/ProjectXY/backend[39m
+
+[90mstdout[2m | src/utils/__tests__/cleanupExpiredChallenges.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[90mstdout[2m | tests/health.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+[90mstdout[2m | tests/security-fixes.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+[90mstdout[2m | tests/seed.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+[90mstdout[2m | tests/categories.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+[90mstdout[2m | tests/products.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+[90mstdout[2m | tests/webauthn.test.js
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+[90mstdout[2m | src/utils/__tests__/cleanupExpiredChallenges.test.js[2m > [22m[2mcleanupExpiredChallenges[2m > [22m[2mshould clean up expired challenges
+[22m[39m{ count: [33m1[39m } 🧹 Cleaned up expired challenges
+
+ [32m✓[39m src/utils/__tests__/cleanupExpiredChallenges.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+[90mstdout[2m | tests/webauthn.test.js
+[22m[39m✓ Redis connected
+
+[90mstdout[2m | tests/security-fixes.test.js
+[22m[39m✓ Redis connected
+
+[90mstdout[2m | tests/products.test.js
+[22m[39m✓ Redis connected
+
+[90mstdout[2m | tests/health.test.js
+[22m[39m✓ Redis connected
+
+[90mstdout[2m | tests/categories.test.js
+[22m[39m✓ Redis connected
+
+ [32m✓[39m tests/health.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 83[2mms[22m[39m
+ [32m✓[39m tests/categories.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m tests/security-fixes.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 93[2mms[22m[39m
+ [32m✓[39m tests/products.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 107[2mms[22m[39m
+ [32m✓[39m tests/webauthn.test.js [2m([22m[2m40 tests[22m[2m)[22m[32m 126[2mms[22m[39m
+ [32m✓[39m tests/seed.test.js [2m([22m[2m17 tests[22m[2m)[22m[33m 4918[2mms[22m[39m
+       [33m[2m✓[22m[39m should create data on first run [33m 417[2mms[22m[39m
+       [33m[2m✓[22m[39m should not duplicate data on second run [33m 540[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m82 passed[39m[22m[90m (82)[39m
+[2m   Start at [22m 14:22:02
+[2m   Duration [22m 5.11s[2m (transform 442ms, setup 230ms, import 2.81s, tests 5.46s, environment 0ms)[22m
+
