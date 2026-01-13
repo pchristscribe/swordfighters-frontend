@@ -56,6 +56,7 @@ export interface ProductFilters {
   status?: ProductStatus
   minPrice?: number
   maxPrice?: number
+  minRating?: number
   page?: number
   limit?: number
   sortBy?: string
@@ -68,3 +69,6 @@ export interface Pagination {
   total: number
   pages: number
 }
+
+// Re-export filter types
+export * from './filters'
