@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "DeepGraph Vue MCP": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-code-graph@latest",
+        "vuejs/core"
+      ]
+    }
+  }
+}
