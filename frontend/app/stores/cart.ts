@@ -18,6 +18,11 @@ export const useCartStore = defineStore('cart', () => {
     items.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   )
 
+  async function fetchProduct(productId: string) {
+    const api = useApi()
+    return await api.getProduct(productId)
+  }
+
   async function addItem(productId: string, quantity: number = 1) {
     const existing = items.value.find(item => item.productId === productId)
     if (existing) {
